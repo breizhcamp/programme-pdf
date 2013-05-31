@@ -122,6 +122,17 @@ public class PdfRenderer {
         return cell;
     }
 
+    private int getRowSpan(String date, Talk talk) {
+
+        int count = 0;
+        for (String otherCreneau : service.getCreneaux().get(date)) {
+            if (otherCreneau.compareTo(talk.getTime()) >= 0 && otherCreneau.compareTo(talk.getEndTime()) < 0) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private List<Talk> createProgrammePages() throws DocumentException, IOException {
         List<Talk> talksToExplain = new ArrayList<>();
         document.setPageSize(PageSize.A4.rotate());
@@ -151,14 +162,15 @@ public class PdfRenderer {
                     if (talk != null) {
                         talksToExplain.add(talk);
                         remplirCellWithTalk(cell, talk);
+                        cell.setRowspan(getRowSpan(date, talk));
                         precedentTalk.put(room, talk);
+                        table.addCell(cell);
                     } else {
                         talk = precedentTalk.get(room);
-                        if (talk != null && talk.getEndTime().compareTo(creneau) > 0) {
-                            remplirCellWithTalk(cell, talk);
+                        if (!(talk != null && talk.getEndTime().compareTo(creneau) > 0)) {
+                            table.addCell(cell);
                         }
                     }
-                    table.addCell(cell);
                 }
             }
             document.add(table);

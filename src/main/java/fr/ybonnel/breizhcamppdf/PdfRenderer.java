@@ -16,20 +16,26 @@
  */
 package fr.ybonnel.breizhcamppdf;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.html.simpleparser.HTMLWorker;
 import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.petebevin.markdown.MarkdownProcessor;
 import fr.ybonnel.breizhcamppdf.model.Speaker;
 import fr.ybonnel.breizhcamppdf.model.Talk;
+import fr.ybonnel.breizhcamppdf.model.TalkDetail;
 
 import java.awt.*;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -82,8 +88,8 @@ public class PdfRenderer {
 
         createFirstPage();
         List<Talk> talksToExplain = createProgrammePages();
+        createTalksPages(talksToExplain);
     }
-
 
 
     private void createFirstPage() throws DocumentException, IOException {
@@ -141,7 +147,7 @@ public class PdfRenderer {
                     cell.setPaddingBottom(10);
                     cell.setHorizontalAlignment(Element.ALIGN_CENTER);
 
-                    Talk talk = service.getTalkByDateAndCreneauxAndRoom(date,creneau,room);
+                    Talk talk = service.getTalkByDateAndCreneauxAndRoom(date, creneau, room);
                     if (talk != null) {
                         talksToExplain.add(talk);
                         remplirCellWithTalk(cell, talk);
@@ -196,7 +202,7 @@ public class PdfRenderer {
         return cell;
     }
 
-    private static final Map<String, BaseColor> mapFormats = new HashMap<String, BaseColor>(){{
+    private static final Map<String, BaseColor> mapFormats = new HashMap<String, BaseColor>() {{
         put("quickie", BaseColor.GREEN);
         put("tools in action", new BaseColor(Color.decode("#B0C4DE")));
         put("keynote", new BaseColor(Color.decode("#B0C4DE")));
@@ -208,7 +214,6 @@ public class PdfRenderer {
     }};
 
     private void remplirCellWithTalk(PdfPCell cell, Talk talk) {
-
 
 
         Chunk chunk = new Chunk(talk.getTitle(), talkFont);
@@ -225,6 +230,72 @@ public class PdfRenderer {
             Paragraph speakerText = new Paragraph(speaker.getFullname(), speakerFont);
             speakerText.setAlignment(Paragraph.ALIGN_CENTER);
             cell.addElement(speakerText);
+        }
+    }
+
+
+    private MarkdownProcessor markdownProcessor = new MarkdownProcessor();
+
+
+    private void createTalksPages(List<Talk> talksToExplain) throws DocumentException, IOException {
+        document.setPageSize(PageSize.A4);
+        document.newPage();
+
+        Paragraph paragraph = new Paragraph("Liste des talks");
+        paragraph.setSpacingAfter(25);
+        paragraph.getFont().setSize(25);
+        paragraph.setAlignment(Element.ALIGN_CENTER);
+        document.add(paragraph);
+
+        for (TalkDetail talk : Lists.transform(talksToExplain, new Function<Talk, TalkDetail>() {
+            @Override
+            public TalkDetail apply(Talk input) {
+                return TalkService.INSTANCE.getTalkDetail(input.getId());
+            }
+        })) {
+
+            Paragraph empty = new Paragraph(" ");
+            PdfPTable table = new PdfPTable(1);
+            table.setWidthPercentage(100);
+            table.setKeepTogether(true);
+            PdfPCell cell = null;
+            Chunk titleTalk = new Chunk(talk.getTitle(), talkFontTitle);
+            titleTalk.setLocalDestination("talk" + talk.getId());
+
+            cell = new PdfPCell(new Paragraph(titleTalk));
+            cell.setBorder(0);
+            table.addCell(cell);
+            cell = new PdfPCell(empty);
+            cell.setBorder(0);
+            table.addCell(cell);
+
+            cell = new PdfPCell();
+            cell.setBorder(0);
+            for (Element element : HTMLWorker.parseToList(new StringReader(markdownProcessor.markdown(talk.getDescription())), null)) {
+                cell.addElement(element);
+            }
+            table.addCell(cell);
+            cell = new PdfPCell(empty);
+            cell.setBorder(0);
+            table.addCell(cell);
+            StringBuilder textSpeakers = new StringBuilder("Présenté par ");
+            List<Speaker> speakers = new ArrayList<>(talk.getSpeakers());
+            for (int countSpeakers = 0; countSpeakers < speakers.size(); countSpeakers++) {
+                if (countSpeakers != 0 && countSpeakers == speakers.size() - 1) {
+                    textSpeakers.append(" et ");
+                } else if (countSpeakers != 0) {
+                    textSpeakers.append(", ");
+                }
+                textSpeakers.append(speakers.get(countSpeakers).getFullname());
+            }
+            Paragraph presentBy = new Paragraph(textSpeakers.toString(), presentFont);
+            cell = new PdfPCell(presentBy);
+            cell.setBorder(0);
+            table.addCell(cell);
+            cell = new PdfPCell(empty);
+            cell.setBorder(0);
+            table.addCell(cell);
+            document.add(table);
         }
     }
 }

@@ -295,7 +295,11 @@ public class PdfRenderer {
 
             cell = new PdfPCell();
             cell.setBorder(0);
+            cell.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
             for (Element element : HTMLWorker.parseToList(new StringReader(markdownProcessor.markdown(talk.getDescription())), null)) {
+                if (element instanceof Paragraph) {
+                    ((Paragraph)element).setAlignment(Element.ALIGN_JUSTIFIED);
+                }
                 cell.addElement(element);
             }
             table.addCell(cell);

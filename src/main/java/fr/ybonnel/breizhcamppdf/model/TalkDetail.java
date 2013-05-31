@@ -25,6 +25,7 @@ public class TalkDetail {
     private String description;
     private List<Speaker> speakers;
     private List<String> tags;
+    private Talk talk;
 
     public String getId() {
         return id;
@@ -50,5 +51,13 @@ public class TalkDetail {
             tags = new ArrayList<>();
         }
         return tags;
+    }
+
+    public void setTalk(Talk talk) {
+        this.talk = talk;
+    }
+
+    public Talk getTalk() {
+        return talk;
     }
 }

@@ -18,6 +18,7 @@ package fr.ybonnel.breizhcamppdf;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import fr.ybonnel.breizhcamppdf.model.Talk;
 import fr.ybonnel.breizhcamppdf.model.TalkDetail;
 
 import java.io.IOException;
@@ -34,18 +35,20 @@ public enum TalkService {
 
     private Gson gson = new GsonBuilder().create();
 
-    public TalkDetail getTalkDetail(String id) {
-        if (!talks.containsKey(id)) {
+    public TalkDetail getTalkDetail(Talk talk) {
+        if (!talks.containsKey(talk.getId())) {
             try {
-                System.out.println("Getting talk detail " + id);
-                URL url = new URL("http://cfp.breizhcamp.org/accepted/talk/" + id);
+                System.out.println("Getting talk detail " + talk.getId());
+                URL url = new URL("http://cfp.breizhcamp.org/accepted/talk/" + talk.getId());
                 URLConnection connection = url.openConnection();
-                talks.put(id, gson.fromJson(new InputStreamReader(connection.getInputStream()), TalkDetail.class));
+                TalkDetail detail = gson.fromJson(new InputStreamReader(connection.getInputStream()), TalkDetail.class);
+                detail.setTalk(talk);
+                talks.put(talk.getId(), detail);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        return talks.get(id);
+        return talks.get(talk.getId());
     }
 
 }

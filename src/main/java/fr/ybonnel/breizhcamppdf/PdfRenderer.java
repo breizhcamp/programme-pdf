@@ -273,10 +273,7 @@ public class PdfRenderer {
 
 
     private void remplirCellWithTalk(PdfPCell cell, Talk talk) throws DocumentException, IOException {
-        Image image = Image.getInstance(PdfRenderer.class.getResource("/formats/" + talk.getFormat().replaceAll(" ", "") + ".png"));
-        image.scaleAbsoluteWidth(15);
-        image.setAlignment(Image.TEXTWRAP);
-        image.setAbsolutePosition(0, 0);
+        Image image = AvatarService.INSTANCE.getImage(PdfRenderer.class.getResource("/formats/" + talk.getFormat().replaceAll(" ", "") + ".png"));
 
 
         float[] widths = {0.15f, 0.85f};
@@ -295,7 +292,7 @@ public class PdfRenderer {
         track.setAlignment(Paragraph.ALIGN_CENTER);
 
         subCell.addElement(track);
-        for (Speaker speaker : TalkService.INSTANCE.getTalkDetail(talk.getId()).getSpeakers()) {
+        for (Speaker speaker : TalkService.INSTANCE.getTalkDetail(talk).getSpeakers()) {
             Paragraph speakerText = new Paragraph(speaker.getFullname(), speakerFont);
             speakerText.setAlignment(Paragraph.ALIGN_CENTER);
             subCell.addElement(speakerText);
@@ -323,7 +320,7 @@ public class PdfRenderer {
         for (TalkDetail talk : Lists.transform(talksToExplain, new Function<Talk, TalkDetail>() {
             @Override
             public TalkDetail apply(Talk input) {
-                return TalkService.INSTANCE.getTalkDetail(input.getId());
+                return TalkService.INSTANCE.getTalkDetail(input);
             }
         })) {
 
@@ -331,16 +328,27 @@ public class PdfRenderer {
             PdfPTable table = new PdfPTable(1);
             table.setWidthPercentage(100);
             table.setKeepTogether(true);
+            table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
             PdfPCell cell = null;
             Chunk titleTalk = new Chunk(talk.getTitle(), talkFontTitle);
             titleTalk.setLocalDestination("talk" + talk.getId());
+            float[] withTitle = {0.05f, 0.95f};
+            PdfPTable titleWithFormat = new PdfPTable(withTitle);
+            titleWithFormat.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+            titleWithFormat.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-            cell = new PdfPCell(new Paragraph(titleTalk));
-            cell.setBorder(0);
-            table.addCell(cell);
-            cell = new PdfPCell(empty);
-            cell.setBorder(0);
-            table.addCell(cell);
+            Image image = AvatarService.INSTANCE.getImage(PdfRenderer.class.getResource("/formats/" + talk.getTalk().getFormat().replaceAll(" ", "") + ".png"));
+            titleWithFormat.addCell(image);
+            titleWithFormat.addCell(new Paragraph(titleTalk));
+
+            table.addCell(titleWithFormat);
+
+            table.addCell(empty);
+
+            table.addCell(new Paragraph("Salle " + talk.getTalk().getRoom() + " à " + talk.getTalk().getTime(), presentFont));
+
+            table.addCell(empty);
+
 
             cell = new PdfPCell();
             cell.setBorder(0);
@@ -352,26 +360,24 @@ public class PdfRenderer {
                 cell.addElement(element);
             }
             table.addCell(cell);
-            cell = new PdfPCell(empty);
-            cell.setBorder(0);
-            table.addCell(cell);
-            StringBuilder textSpeakers = new StringBuilder("Présenté par ");
-            List<Speaker> speakers = new ArrayList<>(talk.getSpeakers());
-            for (int countSpeakers = 0; countSpeakers < speakers.size(); countSpeakers++) {
-                if (countSpeakers != 0 && countSpeakers == speakers.size() - 1) {
-                    textSpeakers.append(" et ");
-                } else if (countSpeakers != 0) {
-                    textSpeakers.append(", ");
-                }
-                textSpeakers.append(speakers.get(countSpeakers).getFullname());
+
+            table.addCell(empty);
+
+            table.addCell(new Paragraph("Présenté par :", presentFont));
+
+            float[] widthSpeaker = {0.05f, 0.95f};
+            for (Speaker speaker : talk.getSpeakers()) {
+                PdfPTable speakerWithAvatar = new PdfPTable(widthSpeaker);
+                speakerWithAvatar.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+                speakerWithAvatar.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                speakerWithAvatar.addCell(AvatarService.INSTANCE.getImage(speaker.getAvatar()));
+                speakerWithAvatar.addCell(new Phrase(speaker.getFullname()));
+                table.addCell(speakerWithAvatar);
             }
-            Paragraph presentBy = new Paragraph(textSpeakers.toString(), presentFont);
-            cell = new PdfPCell(presentBy);
-            cell.setBorder(0);
-            table.addCell(cell);
-            cell = new PdfPCell(empty);
-            cell.setBorder(0);
-            table.addCell(cell);
+
+            table.addCell(empty);
+            table.addCell(empty);
             document.add(table);
         }
     }

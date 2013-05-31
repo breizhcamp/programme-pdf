@@ -22,6 +22,7 @@ public class Talk {
     private String format;
     private String title;
     private String room;
+    private String track;
 
     public String getId() {
         return id;
@@ -45,5 +46,13 @@ public class Talk {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getTrack() {
+        return track;
+    }
+
+    public void setTrack(String track) {
+        this.track = track;
     }
 }

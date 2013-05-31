@@ -41,9 +41,15 @@ public class DataService {
                 URL url = new URL("http://cfp.breizhcamp.org/programme");
                 URLConnection connection = url.openConnection();
                 programme = gson.fromJson(new InputStreamReader(connection.getInputStream()), Event.class).getProgramme();
-                for (Talk talk : getTalks()) {
-                    if (talk.getTime().length() < 5) {
-                        talk.setTime("0" + talk.getTime());
+
+                for (Jour jour : getProgramme().getJours()) {
+                    for (Track track : jour.getTracks()) {
+                        for (Talk talk : track.getTalks()) {
+                            if (talk.getTime().length() < 5) {
+                                talk.setTime("0" + talk.getTime());
+                            }
+                            talk.setTrack(track.getType());
+                        }
                     }
                 }
             } catch (IOException e) {

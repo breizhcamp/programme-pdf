@@ -32,16 +32,15 @@ import com.petebevin.markdown.MarkdownProcessor;
 import fr.ybonnel.breizhcamppdf.model.Speaker;
 import fr.ybonnel.breizhcamppdf.model.Talk;
 import fr.ybonnel.breizhcamppdf.model.TalkDetail;
+import fr.ybonnel.breizhcamppdf.model.Track;
 
 import java.awt.*;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class PdfRenderer {
 
@@ -123,7 +122,7 @@ public class PdfRenderer {
         return cell;
     }
 
-    private List<Talk> createProgrammePages() throws DocumentException {
+    private List<Talk> createProgrammePages() throws DocumentException, IOException {
         List<Talk> talksToExplain = new ArrayList<>();
         document.setPageSize(PageSize.A4.rotate());
         Font font = new Font();
@@ -145,7 +144,7 @@ public class PdfRenderer {
                 for (String room : service.getRooms()) {
                     PdfPCell cell = new PdfPCell();
                     cell.setPaddingBottom(10);
-                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    cell.setHorizontalAlignment(Element.ALIGN_LEFT);
 
                     Talk talk = service.getTalkByDateAndCreneauxAndRoom(date, creneau, room);
                     if (talk != null) {
@@ -169,7 +168,11 @@ public class PdfRenderer {
         titre.add(new Phrase("Programme du " + date));
         document.add(titre);
 
-        PdfPTable table = new PdfPTable(service.getRooms().size() + 1);
+        float[] relativeWidth = new float[service.getRooms().size() + 1];
+        Arrays.fill(relativeWidth, 1f);
+        relativeWidth[0] = 0.5f;
+
+        PdfPTable table = new PdfPTable(relativeWidth);
 
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);
@@ -202,35 +205,53 @@ public class PdfRenderer {
         return cell;
     }
 
-    private static final Map<String, BaseColor> mapFormats = new HashMap<String, BaseColor>() {{
-        put("quickie", BaseColor.GREEN);
-        put("tools in action", new BaseColor(Color.decode("#B0C4DE")));
-        put("keynote", new BaseColor(Color.decode("#B0C4DE")));
-        put("conference", new BaseColor(Color.decode("#FF8C00")));
-        put("lab", new BaseColor(Color.decode("#FF8C00")));
-        put("biglab", new BaseColor(Color.decode("#FF8C00")));
-        put("universite", new BaseColor(Color.decode("#D8BFD8")));
-        put("hands-on", new BaseColor(Color.decode("#D8BFD8")));
+    private static final Map<String, BaseColor> mapTrack = new HashMap<String, BaseColor>() {{
+        put("web", BaseColor.BLUE);
+        put("cloud et bigdata", BaseColor.CYAN);
+        put("agilité", BaseColor.GREEN);
+        put("devops", BaseColor.MAGENTA);
+        put("eXtreme", BaseColor.ORANGE);
+        put("keynote", BaseColor.PINK);
+        put("cloud et architecture", BaseColor.RED);
+        put("langages", BaseColor.YELLOW);
+        put("découverte", new BaseColor(Color.decode("#B0C4DE")));
+        put("web et mobile", new BaseColor(Color.decode("#FF8C00")));
+        put("tooling", new BaseColor(Color.decode("#D8BFD8")));
     }};
 
-    private void remplirCellWithTalk(PdfPCell cell, Talk talk) {
+
+    private void remplirCellWithTalk(PdfPCell cell, Talk talk) throws DocumentException, IOException {
+        Image image = Image.getInstance(PdfRenderer.class.getResource("/formats/" + talk.getFormat().replaceAll(" ", "") + ".png"));
+        image.scaleAbsoluteWidth(15);
+        image.setAlignment(Image.TEXTWRAP);
+        image.setAbsolutePosition(0, 0);
 
 
+        float[] widths = {0.15f, 0.85f};
+        PdfPTable table = new PdfPTable(widths);
+        table.setWidthPercentage(100f);
+        table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+        table.addCell(image);
+        PdfPCell subCell = new PdfPCell();
         Chunk chunk = new Chunk(talk.getTitle(), talkFont);
         chunk.setLocalGoto("talk" + talk.getId());
-        Paragraph titleTalk = new Paragraph(chunk);
+        Paragraph titleTalk = new Paragraph();
+        titleTalk.add(chunk);
         titleTalk.setAlignment(Paragraph.ALIGN_CENTER);
-        cell.addElement(titleTalk);
-        Paragraph theme = new Paragraph(new Phrase(talk.getFormat(), themeFont));
-        theme.setAlignment(Paragraph.ALIGN_CENTER);
+        subCell.addElement(titleTalk);
+        Paragraph track = new Paragraph(new Phrase(talk.getTrack(), themeFont));
+        track.setAlignment(Paragraph.ALIGN_CENTER);
 
-        cell.setBackgroundColor(mapFormats.get(talk.getFormat()));
-        cell.addElement(theme);
+        subCell.addElement(track);
         for (Speaker speaker : TalkService.INSTANCE.getTalkDetail(talk.getId()).getSpeakers()) {
             Paragraph speakerText = new Paragraph(speaker.getFullname(), speakerFont);
             speakerText.setAlignment(Paragraph.ALIGN_CENTER);
-            cell.addElement(speakerText);
+            subCell.addElement(speakerText);
         }
+        subCell.setBorder(Rectangle.NO_BORDER);
+        table.addCell(subCell);
+        cell.setBackgroundColor(mapTrack.get(talk.getTrack()));
+        cell.addElement(table);
     }
 
 

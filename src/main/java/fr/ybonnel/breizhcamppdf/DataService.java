@@ -34,6 +34,17 @@ public class DataService {
 
     private Programme programme;
 
+    private static final Map<String, Integer> dureeOfTalks = new HashMap<String, Integer>(){{
+        put("universite", 180);
+        put("quickie", 15);
+        put("hands-on", 180);
+        put("tools in action", 30);
+        put("conference", 60);
+        put("lab", 60);
+        put("biglab", 120);
+        put("keynote", 30);
+    }};
+
     private Programme getProgramme() {
         if (programme == null) {
             try {
@@ -48,6 +59,20 @@ public class DataService {
                             if (talk.getTime().length() < 5) {
                                 talk.setTime("0" + talk.getTime());
                             }
+
+                            int duree = dureeOfTalks.get(talk.getFormat());
+                            int hDebut = Integer.parseInt(talk.getTime().split(":")[0]);
+                            int mDebut = Integer.parseInt(talk.getTime().split(":")[1]);
+
+                            int hFin = hDebut;
+                            int mFin = mDebut + duree;
+                            while (mFin >= 60) {
+                                mFin = mFin - 60;
+                                hFin++;
+                            }
+
+                            talk.setEndTime((hFin < 10 ? "0" : "") + hFin + ":" + (mFin < 10 ? "0" : "")  +mFin);
+
                             talk.setTrack(track.getType());
                         }
                     }

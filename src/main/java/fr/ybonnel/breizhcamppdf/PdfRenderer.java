@@ -76,9 +76,6 @@ public class PdfRenderer {
         pdfWriter.setPageEvent(new PdfPageEventHelper() {
             @Override
             public void onEndPage(PdfWriter writer, Document document) {
-                System.out.println(document.getPageSize().getLeft());
-                System.out.println(document.getPageSize().getRight());
-                System.out.println(document.getPageSize().getBottom());
                 Rectangle rect = document.getPageSize();
                 ColumnText.showTextAligned(
                         writer.getDirectContent(),
@@ -135,6 +132,7 @@ public class PdfRenderer {
 
 
         for (String date : service.getDates()) {
+            Map<String, Talk> precedentTalk = new HashMap<>();
             PdfPTable table = createBeginningOfPage(font, date);
             for (String creneau : service.getCreneaux().get(date)) {
                 // Nouvelle page à 14h
@@ -153,6 +151,12 @@ public class PdfRenderer {
                     if (talk != null) {
                         talksToExplain.add(talk);
                         remplirCellWithTalk(cell, talk);
+                        precedentTalk.put(room, talk);
+                    } else {
+                        talk = precedentTalk.get(room);
+                        if (talk != null && talk.getEndTime().compareTo(creneau) > 0) {
+                            remplirCellWithTalk(cell, talk);
+                        }
                     }
                     table.addCell(cell);
                 }
@@ -202,7 +206,7 @@ public class PdfRenderer {
         creneau.setAlignment(Paragraph.ALIGN_CENTER);
 
         PdfPCell cell = new PdfPCell();
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        //cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setPaddingBottom(10);
         cell.addElement(creneau);
         return cell;

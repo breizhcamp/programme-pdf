@@ -57,6 +57,7 @@ public class PdfRenderer {
 
     private Document document;
     private PdfWriter pdfWriter;
+    private DataService service = new DataService();
 
     public PdfRenderer(Document document, PdfWriter pdfWriter) {
         this.document = document;
@@ -124,7 +125,7 @@ public class PdfRenderer {
         Paragraph titre = null;
 
 
-        for (String date : DataService.INSTANCE.getDates()) {
+        for (String date : service.getDates()) {
             document.newPage();
             titre = new Paragraph();
             titre.setFont(font);
@@ -132,24 +133,24 @@ public class PdfRenderer {
             titre.add(new Phrase("Programme du " + date));
             document.add(titre);
 
-            PdfPTable table = new PdfPTable(DataService.INSTANCE.getRooms().size() + 1);
+            PdfPTable table = new PdfPTable(service.getRooms().size() + 1);
 
             table.setWidthPercentage(100);
             table.setSpacingBefore(10);
             table.setSpacingAfter(20);
 
             table.addCell(createHeaderCell("Heure"));
-            for (String room : DataService.INSTANCE.getRooms()) {
+            for (String room : service.getRooms()) {
                 table.addCell(createHeaderCell(room));
             }
-            for (String creneau : DataService.INSTANCE.getCreneaux().get(date)) {
+            for (String creneau : service.getCreneaux().get(date)) {
                 table.addCell(createCellCentree(creneau));
-                for (String room : DataService.INSTANCE.getRooms()) {
+                for (String room : service.getRooms()) {
                     PdfPCell cell = new PdfPCell();
                     cell.setPaddingBottom(10);
                     cell.setHorizontalAlignment(Element.ALIGN_CENTER);
 
-                    Talk talk = DataService.INSTANCE.getTalkByDateAndCreneauxAndRoom(date,creneau,room);
+                    Talk talk = service.getTalkByDateAndCreneauxAndRoom(date,creneau,room);
                     if (talk != null) {
                         talksToExplain.add(talk);
                         remplirCellWithTalk(cell, talk);

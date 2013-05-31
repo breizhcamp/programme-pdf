@@ -17,7 +17,6 @@
 package fr.ybonnel.breizhcamppdf;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -25,13 +24,11 @@ import fr.ybonnel.breizhcamppdf.model.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
 
-public enum DataService {
-    INSTANCE;
+public class DataService {
 
     private Gson gson = new GsonBuilder().create();
 
@@ -56,6 +53,8 @@ public enum DataService {
         return programme;
     }
 
+
+
     public List<String> getDates() {
         return Lists.transform(getProgramme().getJours(), new Function<Jour, String>() {
             @Override
@@ -65,51 +64,64 @@ public enum DataService {
         });
     }
 
+
+    private List<Talk> talks = null;
+
     public List<Talk> getTalks() {
-        List<Talk> talks = new ArrayList<>();
-        for (Jour jour : getProgramme().getJours()) {
-            for (Track track : jour.getTracks()) {
-                talks.addAll(track.getTalks());
+        if (talks == null) {
+            talks = new ArrayList<>();
+            for (Jour jour : getProgramme().getJours()) {
+                for (Track track : jour.getTracks()) {
+                    talks.addAll(track.getTalks());
+                }
             }
         }
         return talks;
     }
 
+    private Map<String, List<Talk>> talksByDate;
+
     public Map<String, List<Talk>> getTalksByDate() {
-        Map<String, List<Talk>> talksByDate = new HashMap<>();
-        for (Jour jour : getProgramme().getJours()) {
-            talksByDate.put(jour.getDate(), new ArrayList<Talk>());
-            for (Track track : jour.getTracks()) {
-                talksByDate.get(jour.getDate()).addAll(track.getTalks());
+        if (talksByDate == null) {
+            talksByDate = new HashMap<>();
+            for (Jour jour : getProgramme().getJours()) {
+                talksByDate.put(jour.getDate(), new ArrayList<Talk>());
+                for (Track track : jour.getTracks()) {
+                    talksByDate.get(jour.getDate()).addAll(track.getTalks());
+                }
             }
         }
         return talksByDate;
     }
 
+    private List<String> rooms;
 
     public List<String> getRooms() {
-        Set<String> rooms = new HashSet<>();
-        for (Talk talk : getTalks()) {
-            if (talk.getRoom() == null) {
-                System.err.println("Le talk " + talk.getTitle() + " n'a pas de room");
+        if (rooms == null) {
+            Set<String> roomsInSet = new HashSet<>();
+            for (Talk talk : getTalks()) {
+                roomsInSet.add(talk.getRoom());
             }
-            rooms.add(talk.getRoom());
+            rooms =  new ArrayList<>(roomsInSet);
+            Collections.sort(rooms);
         }
-        List<String> roomsInList =  new ArrayList<>(rooms);
-        Collections.sort(roomsInList);
-        return roomsInList;
+        return rooms;
     }
 
+    private Map<String, List<String>> creneaux;
+
     public Map<String, List<String>> getCreneaux() {
-        Map<String, List<String>> creneaux = new HashMap<>();
-        for (Map.Entry<String, List<Talk>> entry : getTalksByDate().entrySet()) {
-            Set<String> creneauxForDate = new HashSet<>();
-            for (Talk talk : entry.getValue()) {
-                creneauxForDate.add(talk.getTime());
+        if (creneaux == null) {
+            creneaux = new HashMap<>();
+            for (Map.Entry<String, List<Talk>> entry : getTalksByDate().entrySet()) {
+                Set<String> creneauxForDate = new HashSet<>();
+                for (Talk talk : entry.getValue()) {
+                    creneauxForDate.add(talk.getTime());
+                }
+                List<String> creneauxInList = new ArrayList<>(creneauxForDate);
+                Collections.sort(creneauxInList);
+                creneaux.put(entry.getKey(), creneauxInList);
             }
-            List<String> creneauxInList = new ArrayList<>(creneauxForDate);
-            Collections.sort(creneauxInList);
-            creneaux.put(entry.getKey(), creneauxInList);
         }
         return creneaux;
     }

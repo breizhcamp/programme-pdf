@@ -76,12 +76,15 @@ public class PdfRenderer {
         pdfWriter.setPageEvent(new PdfPageEventHelper() {
             @Override
             public void onEndPage(PdfWriter writer, Document document) {
-                Rectangle rect = new Rectangle(36, 54, 559, 788);
+                System.out.println(document.getPageSize().getLeft());
+                System.out.println(document.getPageSize().getRight());
+                System.out.println(document.getPageSize().getBottom());
+                Rectangle rect = document.getPageSize();
                 ColumnText.showTextAligned(
                         writer.getDirectContent(),
                         Element.ALIGN_CENTER,
                         new Phrase("BreizhCamp 2013"),
-                        (rect.getLeft() + rect.getRight()) / 2, rect.getBottom() - 18, 0);
+                        (rect.getLeft() + rect.getRight()) / 2, rect.getBottom() + 18, 0);
             }
         });
 

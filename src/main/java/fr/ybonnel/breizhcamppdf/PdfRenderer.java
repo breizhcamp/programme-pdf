@@ -45,7 +45,7 @@ import java.util.List;
 public class PdfRenderer {
 
     private static final Font talkFont =
-            FontFactory.getFont(FontFactory.HELVETICA, Font.DEFAULTSIZE, Font.NORMAL, BaseColor.BLACK);
+            FontFactory.getFont(FontFactory.HELVETICA, 11, Font.NORMAL, BaseColor.BLACK);
     private static final Font speakerFont =
             FontFactory.getFont(FontFactory.HELVETICA, 9,
                     Font.NORMAL, BaseColor.BLACK);
@@ -143,12 +143,17 @@ public class PdfRenderer {
 
 
         for (String date : service.getDates()) {
+
+            Set<String> tracksInPage = new HashSet<>();
+
             Map<String, Talk> precedentTalk = new HashMap<>();
             PdfPTable table = createBeginningOfPage(font, date);
             for (String creneau : service.getCreneaux().get(date)) {
                 // Nouvelle page à 14h
-                if (creneau.startsWith("14")) {
+                if (creneau.startsWith("13")) {
                     document.add(table);
+
+                    addLegend(tracksInPage);
                     table = createBeginningOfPage(font, date);
                 }
 
@@ -164,6 +169,7 @@ public class PdfRenderer {
                         remplirCellWithTalk(cell, talk);
                         cell.setRowspan(getRowSpan(date, talk));
                         precedentTalk.put(room, talk);
+                        tracksInPage.add(talk.getTrack());
                         table.addCell(cell);
                     } else {
                         talk = precedentTalk.get(room);
@@ -174,8 +180,29 @@ public class PdfRenderer {
                 }
             }
             document.add(table);
+            addLegend(tracksInPage);
         }
         return talksToExplain;
+    }
+
+    private void addLegend(Set<String> tracksInPage) throws DocumentException {
+        PdfPTable legend = new PdfPTable(tracksInPage.size() + 1);
+        legend.setWidthPercentage(100f);
+        PdfPCell cellTitle = new PdfPCell(new Phrase("Légende : ", speakerFont));
+        cellTitle.setBorder(Rectangle.NO_BORDER);
+        cellTitle.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cellTitle.setPadding(2);
+        legend.addCell(cellTitle);
+
+        for (String track : tracksInPage) {
+            PdfPCell color = new PdfPCell(new Phrase(track, speakerFont));
+            color.setHorizontalAlignment(Element.ALIGN_CENTER);
+            color.setPadding(2);
+            color.setBackgroundColor(mapTrack.get(track));
+            legend.addCell(color);
+        }
+        tracksInPage.clear();
+        document.add(legend);
     }
 
     private PdfPTable createBeginningOfPage(Font font, String date) throws DocumentException {
@@ -218,7 +245,6 @@ public class PdfRenderer {
         creneau.setAlignment(Paragraph.ALIGN_CENTER);
 
         PdfPCell cell = new PdfPCell();
-        //cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setPaddingBottom(10);
         cell.addElement(creneau);
         return cell;

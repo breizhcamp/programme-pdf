@@ -100,6 +100,9 @@ public class DataService {
         if (rooms == null) {
             Set<String> roomsInSet = new HashSet<>();
             for (Talk talk : getTalks()) {
+                if (talk.getRoom() == null) {
+                    System.err.println("Talk without room : " + talk.getTitle());
+                }
                 roomsInSet.add(talk.getRoom());
             }
             rooms =  new ArrayList<>(roomsInSet);

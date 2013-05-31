@@ -25,6 +25,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
+import fr.ybonnel.breizhcamppdf.model.Speaker;
 import fr.ybonnel.breizhcamppdf.model.Talk;
 
 import java.awt.*;
@@ -126,24 +127,14 @@ public class PdfRenderer {
 
 
         for (String date : service.getDates()) {
-            document.newPage();
-            titre = new Paragraph();
-            titre.setFont(font);
-            titre.setAlignment(Paragraph.ALIGN_CENTER);
-            titre.add(new Phrase("Programme du " + date));
-            document.add(titre);
-
-            PdfPTable table = new PdfPTable(service.getRooms().size() + 1);
-
-            table.setWidthPercentage(100);
-            table.setSpacingBefore(10);
-            table.setSpacingAfter(20);
-
-            table.addCell(createHeaderCell("Heure"));
-            for (String room : service.getRooms()) {
-                table.addCell(createHeaderCell(room));
-            }
+            PdfPTable table = createBeginningOfPage(font, date);
             for (String creneau : service.getCreneaux().get(date)) {
+                // Nouvelle page à 14h
+                if (creneau.startsWith("14")) {
+                    document.add(table);
+                    table = createBeginningOfPage(font, date);
+                }
+
                 table.addCell(createCellCentree(creneau));
                 for (String room : service.getRooms()) {
                     PdfPCell cell = new PdfPCell();
@@ -161,6 +152,28 @@ public class PdfRenderer {
             document.add(table);
         }
         return talksToExplain;
+    }
+
+    private PdfPTable createBeginningOfPage(Font font, String date) throws DocumentException {
+        Paragraph titre;
+        document.newPage();
+        titre = new Paragraph();
+        titre.setFont(font);
+        titre.setAlignment(Paragraph.ALIGN_CENTER);
+        titre.add(new Phrase("Programme du " + date));
+        document.add(titre);
+
+        PdfPTable table = new PdfPTable(service.getRooms().size() + 1);
+
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(10);
+        table.setSpacingAfter(20);
+
+        table.addCell(createHeaderCell("Heure"));
+        for (String room : service.getRooms()) {
+            table.addCell(createHeaderCell(room));
+        }
+        return table;
     }
 
     private PdfPCell createCellCentree(String content) {
@@ -194,8 +207,6 @@ public class PdfRenderer {
         put("hands-on", new BaseColor(Color.decode("#D8BFD8")));
     }};
 
-
-
     private void remplirCellWithTalk(PdfPCell cell, Talk talk) {
 
 
@@ -210,13 +221,10 @@ public class PdfRenderer {
 
         cell.setBackgroundColor(mapFormats.get(talk.getFormat()));
         cell.addElement(theme);
-        /*for (Speaker speaker : talk.getSpeakers()) {
-            if (speaker.getPicture() != null) {
-                Paragraph speakerText =
-                        new Paragraph(speaker.getFirstName() + " " + speaker.getLastName(), speakerFont);
-                speakerText.setAlignment(Paragraph.ALIGN_CENTER);
-                cell.addElement(speakerText);
-            }
-        }*/
+        for (Speaker speaker : TalkService.INSTANCE.getTalkDetail(talk.getId()).getSpeakers()) {
+            Paragraph speakerText = new Paragraph(speaker.getFullname(), speakerFont);
+            speakerText.setAlignment(Paragraph.ALIGN_CENTER);
+            cell.addElement(speakerText);
+        }
     }
 }

@@ -251,17 +251,17 @@ public class PdfRenderer {
     }
 
     private static final Map<String, BaseColor> mapTrack = new HashMap<String, BaseColor>() {{
-        put("web", BaseColor.BLUE);
-        put("cloud et bigdata", BaseColor.CYAN);
-        put("agilité", BaseColor.GREEN);
-        put("devops", BaseColor.MAGENTA);
-        put("eXtreme", BaseColor.ORANGE);
-        put("keynote", BaseColor.PINK);
-        put("cloud et architecture", BaseColor.RED);
-        put("langages", BaseColor.YELLOW);
+        put("web", new BaseColor(Color.decode("#3030DB")));
+        put("cloud et bigdata", new BaseColor(Color.decode("#75EFE7")));
+        put("agilité", new BaseColor(Color.decode("#56C566")));
+        put("devops", new BaseColor(Color.decode("#FF7AA2")));
+        put("eXtreme", new BaseColor(Color.decode("#FF8C00")));
+        put("keynote", new BaseColor(Color.decode("#F8ECDE")));
+        put("cloud et architecture", new BaseColor(Color.decode("#E03044")));
+        put("langages", new BaseColor(Color.decode("#F9DB0B")));
         put("découverte", new BaseColor(Color.decode("#B0C4DE")));
-        put("web et mobile", new BaseColor(Color.decode("#FF8C00")));
-        put("tooling", new BaseColor(Color.decode("#D8BFD8")));
+        put("web et mobile", new BaseColor(Color.decode("#825939")));
+        put("tooling", new BaseColor(Color.decode("#A174B9")));
     }};
 
 

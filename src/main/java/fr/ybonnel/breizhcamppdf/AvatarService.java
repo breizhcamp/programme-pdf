@@ -18,7 +18,6 @@ package fr.ybonnel.breizhcamppdf;
 
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.Image;
-import com.itextpdf.text.pdf.PdfImage;
 
 import java.io.IOException;
 import java.net.URL;

@@ -23,22 +23,15 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.html.simpleparser.HTMLWorker;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfPageEventHelper;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.*;
 import com.petebevin.markdown.MarkdownProcessor;
 import fr.ybonnel.breizhcamppdf.model.Speaker;
 import fr.ybonnel.breizhcamppdf.model.Talk;
 import fr.ybonnel.breizhcamppdf.model.TalkDetail;
-import fr.ybonnel.breizhcamppdf.model.Track;
 
 import java.awt.*;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
@@ -139,7 +132,6 @@ public class PdfRenderer {
         Font font = new Font();
         font.setStyle(Font.BOLD);
         font.setSize(14);
-        Paragraph titre = null;
 
 
         for (String date : service.getDates()) {
@@ -157,7 +149,15 @@ public class PdfRenderer {
                     table = createBeginningOfPage(font, date);
                 }
 
-                table.addCell(createCellCentree(creneau));
+                PdfPCell cellCreneau = new PdfPCell();
+                cellCreneau.setPaddingBottom(10);
+                Paragraph startTime = new Paragraph(creneau);
+                startTime.setAlignment(Element.ALIGN_CENTER);
+                cellCreneau.addElement(startTime);
+                Paragraph endTime = new Paragraph(getEndTime(date, creneau));
+                endTime.setAlignment(Element.ALIGN_CENTER);
+                cellCreneau.addElement(endTime);
+                table.addCell(cellCreneau);
                 for (String room : service.getRooms()) {
                     PdfPCell cell = new PdfPCell();
                     cell.setPaddingBottom(10);
@@ -183,6 +183,17 @@ public class PdfRenderer {
             addLegend(tracksInPage);
         }
         return talksToExplain;
+    }
+
+    private String getEndTime(String date, String creneau) {
+        String endTime = "99:99";
+        for (String room : service.getRooms()) {
+            Talk talk = service.getTalkByDateAndCreneauxAndRoom(date, creneau, room);
+            if (talk != null && talk.getEndTime().compareTo(endTime) < 0) {
+                endTime = talk.getEndTime();
+            }
+        }
+        return endTime;
     }
 
     private void addLegend(Set<String> tracksInPage) throws DocumentException {
@@ -229,25 +240,6 @@ public class PdfRenderer {
             table.addCell(createHeaderCell(room));
         }
         return table;
-    }
-
-    private PdfPCell createCellCentree(String content) {
-        return createCellCentree(content, null);
-    }
-
-    private PdfPCell createCellCentree(String content, Font font) {
-        Paragraph creneau = null;
-        if (font == null) {
-            creneau = new Paragraph(content);
-        } else {
-            creneau = new Paragraph(content, font);
-        }
-        creneau.setAlignment(Paragraph.ALIGN_CENTER);
-
-        PdfPCell cell = new PdfPCell();
-        cell.setPaddingBottom(10);
-        cell.addElement(creneau);
-        return cell;
     }
 
     private static final Map<String, BaseColor> mapTrack = new HashMap<String, BaseColor>() {{
@@ -329,7 +321,7 @@ public class PdfRenderer {
             table.setWidthPercentage(100);
             table.setKeepTogether(true);
             table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
-            PdfPCell cell = null;
+            PdfPCell cell;
             Chunk titleTalk = new Chunk(talk.getTitle(), talkFontTitle);
             titleTalk.setLocalDestination("talk" + talk.getId());
             float[] withTitle = {0.05f, 0.95f};
@@ -345,7 +337,9 @@ public class PdfRenderer {
 
             table.addCell(empty);
 
-            table.addCell(new Paragraph("Salle " + talk.getTalk().getRoom() + " à " + talk.getTalk().getTime(), presentFont));
+            table.addCell(new Paragraph("Salle " + talk.getTalk().getRoom()
+                    + " de " + talk.getTalk().getTime()
+                    + " à " + talk.getTalk().getEndTime(), presentFont));
 
             table.addCell(empty);
 

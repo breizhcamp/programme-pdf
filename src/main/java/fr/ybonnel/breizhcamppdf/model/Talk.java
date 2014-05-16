@@ -18,19 +18,15 @@ package fr.ybonnel.breizhcamppdf.model;
 
 public class Talk {
     private String id;
-    private String time;
+    private String start;
+    private String end;
     private String format;
     private String title;
     private String room;
     private String track;
-    private String endTime;
 
     public String getId() {
         return id;
-    }
-
-    public String getTime() {
-        return time;
     }
 
     public String getFormat() {
@@ -45,10 +41,6 @@ public class Talk {
         return room;
     }
 
-    public void setTime(String time) {
-        this.time = time;
-    }
-
     public String getTrack() {
         return track;
     }
@@ -57,11 +49,11 @@ public class Talk {
         this.track = track;
     }
 
-    public String getEndTime() {
-        return endTime;
+    public String getStart() {
+        return start.length() == 5 ? start : ("0" + start);
     }
 
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
+    public String getEnd() {
+        return end.length() == 5 ? end : ("0" + end);
     }
 }

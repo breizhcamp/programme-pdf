@@ -23,6 +23,7 @@ public class TalkDetail {
     private String id;
     private String title;
     private String description;
+    private String track;
     private List<Speaker> speakers;
     private List<String> tags;
     private Talk talk;
@@ -37,6 +38,10 @@ public class TalkDetail {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getTrack() {
+        return track;
     }
 
     public List<Speaker> getSpeakers() {

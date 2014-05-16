@@ -18,11 +18,11 @@ package fr.ybonnel.breizhcamppdf.model;
 
 public class Event {
 
-    private String title;
+    private String titre;
     private Programme programme;
 
-    public String getTitle() {
-        return title;
+    public String getTitre() {
+        return titre;
     }
 
     public Programme getProgramme() {

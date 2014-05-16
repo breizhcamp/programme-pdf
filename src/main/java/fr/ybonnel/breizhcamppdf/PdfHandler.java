@@ -26,6 +26,7 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class PdfHandler extends AbstractHandler {
@@ -40,6 +41,25 @@ public class PdfHandler extends AbstractHandler {
 
         try {
             PdfWriter pdfWriter = PdfWriter.getInstance(document, response.getOutputStream());
+
+            document.open();
+
+            new PdfRenderer(document, pdfWriter).render();
+
+            document.close();
+
+        } catch (DocumentException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Document document = new Document(PageSize.A4.rotate());
+
+        FileOutputStream output = new FileOutputStream("programme.pdf");
+
+        try {
+            PdfWriter pdfWriter = PdfWriter.getInstance(document, output);
 
             document.open();
 

@@ -34,46 +34,18 @@ public class DataService {
 
     private Programme programme;
 
-    private static final Map<String, Integer> dureeOfTalks = new HashMap<String, Integer>(){{
-        put("universite", 180);
-        put("quickie", 15);
-        put("hands-on", 180);
-        put("tools in action", 30);
-        put("conference", 60);
-        put("lab", 60);
-        put("biglab", 120);
-        put("keynote", 30);
-    }};
-
     private Programme getProgramme() {
         if (programme == null) {
             try {
                 //URL url = new URL("file:///D:/sources/Breizhcamp-cfp/conf/breizhcamp.json");
-                URL url = new URL("http://cfp.breizhcamp.org/programme");
+                URL url = new URL("http://www.breizhcamp.org/json/schedule.json");
                 URLConnection connection = url.openConnection();
                 programme = gson.fromJson(new InputStreamReader(connection.getInputStream()), Event.class).getProgramme();
 
                 for (Jour jour : getProgramme().getJours()) {
                     for (Track track : jour.getTracks()) {
-                        for (Talk talk : track.getTalks()) {
-                            if (talk.getTime().length() < 5) {
-                                talk.setTime("0" + talk.getTime());
-                            }
-
-                            int duree = dureeOfTalks.get(talk.getFormat());
-                            int hDebut = Integer.parseInt(talk.getTime().split(":")[0]);
-                            int mDebut = Integer.parseInt(talk.getTime().split(":")[1]);
-
-                            int hFin = hDebut;
-                            int mFin = mDebut + duree;
-                            while (mFin >= 60) {
-                                mFin = mFin - 60;
-                                hFin++;
-                            }
-
-                            talk.setEndTime((hFin < 10 ? "0" : "") + hFin + ":" + (mFin < 10 ? "0" : "")  +mFin);
-
-                            talk.setTrack(track.getType());
+                        for (Talk talk : track.getProposals()) {
+                            TalkService.INSTANCE.getTalkDetail(talk);
                         }
                     }
                 }
@@ -103,7 +75,7 @@ public class DataService {
             talks = new ArrayList<>();
             for (Jour jour : getProgramme().getJours()) {
                 for (Track track : jour.getTracks()) {
-                    talks.addAll(track.getTalks());
+                    talks.addAll(track.getProposals());
                 }
             }
         }
@@ -118,7 +90,7 @@ public class DataService {
             for (Jour jour : getProgramme().getJours()) {
                 talksByDate.put(jour.getDate(), new ArrayList<Talk>());
                 for (Track track : jour.getTracks()) {
-                    talksByDate.get(jour.getDate()).addAll(track.getTalks());
+                    talksByDate.get(jour.getDate()).addAll(track.getProposals());
                 }
             }
         }
@@ -150,7 +122,7 @@ public class DataService {
             for (Map.Entry<String, List<Talk>> entry : getTalksByDate().entrySet()) {
                 Set<String> creneauxForDate = new HashSet<>();
                 for (Talk talk : entry.getValue()) {
-                    creneauxForDate.add(talk.getTime());
+                    creneauxForDate.add(talk.getStart());
                 }
                 List<String> creneauxInList = new ArrayList<>(creneauxForDate);
                 Collections.sort(creneauxInList);
@@ -163,7 +135,7 @@ public class DataService {
     public Talk getTalkByDateAndCreneauxAndRoom(String date, String creneau, String room) {
         Talk talkSelected = null;
         for (Talk talk : getTalksByDate().get(date)) {
-            if (creneau.equals(talk.getTime()) && room.equals(talk.getRoom())) {
+            if (creneau.equals(talk.getStart()) && room.equals(talk.getRoom())) {
                 if (talkSelected != null) {
                     throw new RuntimeException("Two talk for " + date + " " + creneau + " " + room);
                 }

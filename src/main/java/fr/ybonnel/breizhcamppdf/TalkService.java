@@ -36,19 +36,25 @@ public enum TalkService {
     private Gson gson = new GsonBuilder().create();
 
     public TalkDetail getTalkDetail(Talk talk) {
-        if (!talks.containsKey(talk.getId())) {
+        if (talks.isEmpty()) {
             try {
-                System.out.println("Getting talk detail " + talk.getId());
-                URL url = new URL("http://cfp.breizhcamp.org/accepted/talk/" + talk.getId());
+                System.out.println("Getting talk details");
+                URL url = new URL("http://www.breizhcamp.org/json/talks.json");
                 URLConnection connection = url.openConnection();
-                TalkDetail detail = gson.fromJson(new InputStreamReader(connection.getInputStream()), TalkDetail.class);
-                detail.setTalk(talk);
-                talks.put(talk.getId(), detail);
+                TalkDetail[] details = gson.fromJson(new InputStreamReader(connection.getInputStream()), TalkDetail[].class);
+                for (TalkDetail detail : details) {
+                    talks.put(detail.getId(), detail);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        return talks.get(talk.getId());
+        TalkDetail detail = talks.get(talk.getId());
+        if (detail != null) {
+            detail.setTalk(talk);
+            talk.setTrack(detail.getTrack());
+        }
+        return detail;
     }
 
 }

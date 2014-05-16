@@ -21,16 +21,16 @@ import java.util.List;
 
 public class Track {
     private String type;
-    private List<Talk> talks;
+    private List<Talk> proposals;
 
     public String getType() {
         return type;
     }
 
-    public List<Talk> getTalks() {
-        if (talks == null) {
-            talks = new ArrayList<>();
+    public List<Talk> getProposals() {
+        if (proposals == null) {
+            proposals = new ArrayList<>();
         }
-        return talks;
+        return proposals;
     }
 }

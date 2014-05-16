@@ -37,14 +37,22 @@ public enum AvatarService {
     }
 
     public Image getImage(String url) throws BadElementException, IOException {
+        if (url == null) {
+            return null;
+        }
         if (!cache.containsKey(url)) {
             System.out.println(url);
-            Image avatar = Image.getInstance(url);
-            int height = 40;
-            float factor = ((float)height)/ avatar.getHeight();
-            int width = (int)(avatar.getWidth() * factor);
-            avatar.scaleToFit(width, height);
-            cache.put(url, avatar);
+            try {
+                Image avatar = Image.getInstance(url);
+                int height = 40;
+                float factor = ((float)height)/ avatar.getHeight();
+                int width = (int)(avatar.getWidth() * factor);
+                avatar.scaleToFit(width, height);
+                cache.put(url, avatar);
+            }
+            catch (Exception ex) {
+
+            }
         }
         return cache.get(url);
     }

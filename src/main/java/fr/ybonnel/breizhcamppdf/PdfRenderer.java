@@ -73,7 +73,7 @@ public class PdfRenderer {
                 ColumnText.showTextAligned(
                         writer.getDirectContent(),
                         Element.ALIGN_CENTER,
-                        new Phrase("BreizhCamp 2013"),
+                        new Phrase("BreizhCamp 2014"),
                         (rect.getLeft() + rect.getRight()) / 2, rect.getBottom() + 18, 0);
             }
         });
@@ -92,7 +92,7 @@ public class PdfRenderer {
         imageLogo.scaleAbsolute(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin(), imageLogo.getHeight());
         document.add(imageLogo);
 
-        Paragraph paragraph = new Paragraph("13 et 14 Juin 2013");
+        Paragraph paragraph = new Paragraph("21, 22 et 23 Mai 2014");
         paragraph.setSpacingAfter(25);
         paragraph.getFont().setSize(25);
         paragraph.setAlignment(Element.ALIGN_CENTER);
@@ -119,7 +119,7 @@ public class PdfRenderer {
 
         int count = 0;
         for (String otherCreneau : service.getCreneaux().get(date)) {
-            if (otherCreneau.compareTo(talk.getTime()) >= 0 && otherCreneau.compareTo(talk.getEndTime()) < 0) {
+            if (otherCreneau.compareTo(talk.getStart()) >= 0 && otherCreneau.compareTo(talk.getEnd()) < 0) {
                 count++;
             }
         }
@@ -142,7 +142,7 @@ public class PdfRenderer {
             PdfPTable table = createBeginningOfPage(font, date);
             for (String creneau : service.getCreneaux().get(date)) {
                 // Nouvelle page à 14h
-                if (creneau.startsWith("13")) {
+                if (creneau.startsWith("14:00")) {
                     document.add(table);
 
                     addLegend(tracksInPage);
@@ -173,7 +173,7 @@ public class PdfRenderer {
                         table.addCell(cell);
                     } else {
                         talk = precedentTalk.get(room);
-                        if (!(talk != null && talk.getEndTime().compareTo(creneau) > 0)) {
+                        if (!(talk != null && talk.getEnd().compareTo(creneau) > 0)) {
                             table.addCell(cell);
                         }
                     }
@@ -189,8 +189,8 @@ public class PdfRenderer {
         String endTime = "99:99";
         for (String room : service.getRooms()) {
             Talk talk = service.getTalkByDateAndCreneauxAndRoom(date, creneau, room);
-            if (talk != null && talk.getEndTime().compareTo(endTime) < 0) {
-                endTime = talk.getEndTime();
+            if (talk != null && talk.getEnd().compareTo(endTime) < 0) {
+                endTime = talk.getEnd();
             }
         }
         return endTime;
@@ -249,18 +249,20 @@ public class PdfRenderer {
         BaseColor bleu = new BaseColor(Color.decode("#B0C4DE"));
         BaseColor violet = new BaseColor(Color.decode("#A174B9"));
         
-        put("web", jaune);
-        put("cloud et bigdata", orange);
-        put("agilité", vert);
-        put("devops", bleu);
-        put("eXtreme", violet);
+        put("Web", jaune);
+        put("Cloud et BigData", orange);
+        put("Agilité", vert);
+        put("DevOps", bleu);
+        put("Internet of Things", violet);
+        put("Hardware", violet);
         
-        put("keynote", new BaseColor(Color.decode("#F8ECDE")));
-        put("cloud et architecture", orange);
-        put("langages", bleu);
+        put("Keynote", new BaseColor(Color.decode("#F8ECDE")));
+        put("Architecture", orange);
+        put("Langages", bleu);
         put("découverte", violet);
-        put("web et mobile", jaune);
-        put("tooling", vert);
+        put("Web et Mobile", jaune);
+        put("Tooling", vert);
+        put("Tool", vert);
     }};
 
 
@@ -284,10 +286,13 @@ public class PdfRenderer {
         track.setAlignment(Paragraph.ALIGN_CENTER);
 
         subCell.addElement(track);
-        for (Speaker speaker : TalkService.INSTANCE.getTalkDetail(talk).getSpeakers()) {
-            Paragraph speakerText = new Paragraph(speaker.getFullname(), speakerFont);
-            speakerText.setAlignment(Paragraph.ALIGN_CENTER);
-            subCell.addElement(speakerText);
+        TalkDetail detail = TalkService.INSTANCE.getTalkDetail(talk);
+        if (detail != null) {
+            for (Speaker speaker : detail.getSpeakers()) {
+                Paragraph speakerText = new Paragraph(speaker.getFullname(), speakerFont);
+                speakerText.setAlignment(Paragraph.ALIGN_CENTER);
+                subCell.addElement(speakerText);
+            }
         }
         subCell.setBorder(Rectangle.NO_BORDER);
         table.addCell(subCell);
@@ -316,6 +321,10 @@ public class PdfRenderer {
             }
         })) {
 
+            if (talk == null) {
+                continue;
+            }
+
             Paragraph empty = new Paragraph(" ");
             PdfPTable table = new PdfPTable(1);
             table.setWidthPercentage(100);
@@ -338,8 +347,8 @@ public class PdfRenderer {
             table.addCell(empty);
 
             table.addCell(new Paragraph("Salle " + talk.getTalk().getRoom()
-                    + " de " + talk.getTalk().getTime()
-                    + " à " + talk.getTalk().getEndTime(), presentFont));
+                    + " de " + talk.getTalk().getStart()
+                    + " à " + talk.getTalk().getEnd(), presentFont));
 
             table.addCell(empty);
 

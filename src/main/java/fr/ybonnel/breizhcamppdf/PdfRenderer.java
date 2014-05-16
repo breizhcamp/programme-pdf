@@ -83,7 +83,7 @@ public class PdfRenderer {
 
         createFirstPage();
         List<Talk> talksToExplain = createProgrammePages();
-        //createTalksPages(talksToExplain);
+        createTalksPages(talksToExplain);
     }
 
 

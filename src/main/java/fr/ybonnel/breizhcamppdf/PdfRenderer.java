@@ -80,7 +80,7 @@ public class PdfRenderer {
 
         createFirstPage();
         List<Talk> talksToExplain = createProgrammePages();
-        createTalksPages(talksToExplain);
+        //createTalksPages(talksToExplain);
     }
 
 
@@ -89,14 +89,20 @@ public class PdfRenderer {
         document.setPageSize(PageSize.A4);
         document.newPage();
         Image imageLogo = Image.getInstance(PdfRenderer.class.getResource("/logo.png"));
-        imageLogo.scaleAbsolute(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin(), imageLogo.getHeight());
+        imageLogo.scaleToFit(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin(), imageLogo.getHeight());
         document.add(imageLogo);
 
-        Paragraph paragraph = new Paragraph("21, 22 et 23 Mai 2014");
-        paragraph.setSpacingAfter(25);
-        paragraph.getFont().setSize(25);
+        Paragraph paragraph = new Paragraph("21, 22 et 23 mai");
+        paragraph.setSpacingAfter(200);
+        paragraph.getFont().setSize(20);
         paragraph.setAlignment(Element.ALIGN_CENTER);
         document.add(paragraph);
+
+        Paragraph title = new Paragraph("Programme 2014");
+        title.setSpacingAfter(25);
+        title.getFont().setSize(56);
+        title.setAlignment(Element.ALIGN_CENTER);
+        document.add(title);
 
         document.setPageSize(savePagesize);
     }
@@ -187,7 +193,7 @@ public class PdfRenderer {
 
     private String getEndTime(String date, String creneau) {
         String endTime = "99:99";
-        for (String room : service.getRooms()) {
+        for (String room : service.getRooms(date)) {
             Talk talk = service.getTalkByDateAndCreneauxAndRoom(date, creneau, room);
             if (talk != null && talk.getEnd().compareTo(endTime) < 0) {
                 endTime = talk.getEnd();

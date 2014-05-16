@@ -97,19 +97,21 @@ public class DataService {
         return talksByDate;
     }
 
-    private List<String> rooms;
+    private Map<String,List<String>> roomsByDate = new HashMap<>();
 
-    public List<String> getRooms() {
+    public List<String> getRooms(String date) {
+        List<String> rooms = roomsByDate.get(date);
         if (rooms == null) {
             Set<String> roomsInSet = new HashSet<>();
-            for (Talk talk : getTalks()) {
+            for (Talk talk : getTalksByDate().get(date)) {
                 if (talk.getRoom() == null) {
                     System.err.println("Talk without room : " + talk.getTitle());
                 }
                 roomsInSet.add(talk.getRoom());
             }
-            rooms =  new ArrayList<>(roomsInSet);
+            rooms = new ArrayList<>(roomsInSet);
             Collections.sort(rooms);
+            roomsByDate.put(date, rooms);
         }
         return rooms;
     }

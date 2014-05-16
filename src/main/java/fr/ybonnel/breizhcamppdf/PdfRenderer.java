@@ -158,7 +158,7 @@ public class PdfRenderer {
                 endTime.setAlignment(Element.ALIGN_CENTER);
                 cellCreneau.addElement(endTime);
                 table.addCell(cellCreneau);
-                for (String room : service.getRooms()) {
+                for (String room : service.getRooms(date)) {
                     PdfPCell cell = new PdfPCell();
                     cell.setPaddingBottom(10);
                     cell.setHorizontalAlignment(Element.ALIGN_LEFT);
@@ -225,7 +225,7 @@ public class PdfRenderer {
         titre.add(new Phrase("Programme du " + date));
         document.add(titre);
 
-        float[] relativeWidth = new float[service.getRooms().size() + 1];
+        float[] relativeWidth = new float[service.getRooms(date).size() + 1];
         Arrays.fill(relativeWidth, 1f);
         relativeWidth[0] = 0.5f;
 
@@ -236,7 +236,7 @@ public class PdfRenderer {
         table.setSpacingAfter(20);
 
         table.addCell(createHeaderCell("Heure"));
-        for (String room : service.getRooms()) {
+        for (String room : service.getRooms(date)) {
             table.addCell(createHeaderCell(room));
         }
         return table;

@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class PdfHandler extends AbstractHandler {
 
@@ -37,33 +38,28 @@ public class PdfHandler extends AbstractHandler {
         if (!baseRequest.getPathInfo().equals("/programme.pdf")) {
             return;
         }
-        Document document = new Document(PageSize.A4.rotate());
-
-        try {
-            PdfWriter pdfWriter = PdfWriter.getInstance(document, response.getOutputStream());
-
-            document.open();
-
-            new PdfRenderer(document, pdfWriter).render();
-
-            document.close();
-
-        } catch (DocumentException e) {
-            throw new RuntimeException(e);
-        }
+        generate(response.getOutputStream(), true);
     }
 
     public static void main(String[] args) throws Exception {
-        Document document = new Document(PageSize.A4.rotate());
+        generate(new FileOutputStream("programme.pdf"), true);
+        generate(new FileOutputStream("salles.pdf"), false);
+    }
 
-        FileOutputStream output = new FileOutputStream("programme.pdf");
+    protected static void generate(OutputStream output, boolean schedule) throws IOException {
+        Document document = new Document(PageSize.A4.rotate());
 
         try {
             PdfWriter pdfWriter = PdfWriter.getInstance(document, output);
 
             document.open();
 
-            new PdfRenderer(document, pdfWriter).render();
+            if (schedule) {
+                new PdfRenderer(document, pdfWriter).render();
+            }
+            else {
+                new RoomPdfRenderer(document, pdfWriter).render();
+            }
 
             document.close();
 

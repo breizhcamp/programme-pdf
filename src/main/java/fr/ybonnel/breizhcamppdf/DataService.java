@@ -111,6 +111,7 @@ public class DataService {
             }
             rooms = new ArrayList<>(roomsInSet);
             Collections.sort(rooms);
+            Collections.reverse(rooms);
             roomsByDate.put(date, rooms);
         }
         return rooms;

@@ -43,7 +43,7 @@ public class PdfHandler extends AbstractHandler {
 
     public static void main(String[] args) throws Exception {
         generate(new FileOutputStream("programme.pdf"), true);
-        generate(new FileOutputStream("salles.pdf"), false);
+        //generate(new FileOutputStream("salles.pdf"), false);
     }
 
     protected static void generate(OutputStream output, boolean schedule) throws IOException {

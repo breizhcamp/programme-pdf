@@ -69,18 +69,21 @@ public class PdfRenderer {
         pdfWriter.setPageEvent(new PdfPageEventHelper() {
             @Override
             public void onEndPage(PdfWriter writer, Document document) {
-                Rectangle rect = document.getPageSize();
-                ColumnText.showTextAligned(
-                        writer.getDirectContent(),
-                        Element.ALIGN_CENTER,
-                        new Phrase("BreizhCamp 2014"),
-                        (rect.getLeft() + rect.getRight()) / 2, rect.getBottom() + 18, 0);
+
+                if (writer.getPageNumber() > 1) {
+                    Rectangle rect = document.getPageSize();
+                    ColumnText.showTextAligned(
+                            writer.getDirectContent(),
+                            Element.ALIGN_CENTER,
+                            new Phrase("BreizhCamp 2014"),
+                            (rect.getLeft() + rect.getRight()) / 2, rect.getBottom() + 18, 0);
+                }
             }
         });
 
         createFirstPage();
         List<Talk> talksToExplain = createProgrammePages();
-        createTalksPages(talksToExplain);
+        //createTalksPages(talksToExplain);
     }
 
 
@@ -93,18 +96,46 @@ public class PdfRenderer {
         document.add(imageLogo);
 
         Paragraph paragraph = new Paragraph("21, 22 et 23 mai");
-        paragraph.setSpacingAfter(200);
+        paragraph.setSpacingAfter(80);
         paragraph.getFont().setSize(20);
         paragraph.setAlignment(Element.ALIGN_CENTER);
         document.add(paragraph);
 
         Paragraph title = new Paragraph("Programme 2014");
-        title.setSpacingAfter(25);
+        title.setSpacingAfter(100);
         title.getFont().setSize(56);
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
 
+        PdfPTable sponsors = new PdfPTable(4);
+        sponsors.setWidthPercentage(90f);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/LogoZenika-H-(Quadri).jpg", 2);
+        addSponsor(sponsors, "http://blogs.technet.com/resized-image.ashx/__size/450x0/__key/communityserver-blogs-components-weblogfiles/00-00-00-80-54/6864.Microsoft-Logo.png", 2);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/Google_Logo_3564x1189.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/cbpaas.jpeg", 1);
+        addSponsor(sponsors, "https://github.global.ssl.fastly.net/images/modules/logos_page/GitHub-Logo.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/sonarsource-300x94.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/serli.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/Logo_sqli_group.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/SofteamCadextanLogo_w200.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logoSII_w200.png", 1);
+        document.add(sponsors);
+
+        Image istic = Image.getInstance("http://www.breizhcamp.org/img/Logo_ISTIC_BLACK_FRA.jpg");
+        istic.scaleToFit(150, 150);
+        istic.setAlignment(Element.ALIGN_CENTER);
+        document.add(istic);
+
         document.setPageSize(savePagesize);
+    }
+
+    private void addSponsor(PdfPTable sponsors, String imageUrl, int colspan) throws DocumentException, IOException {
+        PdfPCell sponsor = new PdfPCell();
+        sponsor.setImage(Image.getInstance(imageUrl));
+        sponsor.setColspan(colspan);
+        sponsor.setBorder(Rectangle.NO_BORDER);
+        sponsor.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        sponsors.addCell(sponsor);
     }
 
 

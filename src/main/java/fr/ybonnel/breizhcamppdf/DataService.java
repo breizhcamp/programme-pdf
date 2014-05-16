@@ -116,28 +116,6 @@ public class DataService {
         return rooms;
     }
 
-    private Map<String, List<String>> roomsByDate = null;
-
-    public List<String> getRooms(String date) {
-        if (roomsByDate == null) {
-            roomsByDate = new HashMap<>();
-            for (Map.Entry<String, List<Talk>> entry : getTalksByDate().entrySet()) {
-                Set<String> roomsInSet = new HashSet<>();
-                for (Talk talk : entry.getValue()) {
-                    if (talk.getRoom() == null) {
-                        System.err.println("Talk without room : " + talk.getTitle());
-                    }
-                    roomsInSet.add(talk.getRoom());
-                }
-                roomsByDate.put(entry.getKey(), new ArrayList<>(roomsInSet));
-                Collections.sort(roomsByDate.get(entry.getKey()));
-            }
-
-
-        }
-        return roomsByDate.get(date);
-    }
-
     private Map<String, List<String>> creneaux;
 
     public Map<String, List<String>> getCreneaux() {

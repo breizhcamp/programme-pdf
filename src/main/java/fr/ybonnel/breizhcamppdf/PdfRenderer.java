@@ -142,7 +142,7 @@ public class PdfRenderer {
             PdfPTable table = createBeginningOfPage(font, date);
             for (String creneau : service.getCreneaux().get(date)) {
                 // Nouvelle page à 14h
-                if (creneau.startsWith("14:00")) {
+                if (creneau.startsWith("14:00") && !tracksInPage.isEmpty()) {
                     document.add(table);
 
                     addLegend(tracksInPage);

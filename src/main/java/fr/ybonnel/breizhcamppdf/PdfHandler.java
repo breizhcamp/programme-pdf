@@ -35,10 +35,12 @@ public class PdfHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        if (!baseRequest.getPathInfo().equals("/programme.pdf")) {
-            return;
+        if (baseRequest.getPathInfo().equals("/programme.pdf")) {
+            generate(response.getOutputStream(), true);
         }
-        generate(response.getOutputStream(), true);
+        else if (baseRequest.getPathInfo().equals("/salles.pdf")) {
+            generate(response.getOutputStream(), false);
+        }
     }
 
     public static void main(String[] args) throws Exception {

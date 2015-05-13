@@ -21,6 +21,7 @@ import com.itextpdf.text.pdf.*;
 import fr.ybonnel.breizhcamppdf.model.Talk;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 
@@ -68,7 +69,18 @@ public class MiniProgTextRenderer {
             for (String creneau : service.getCreneaux().get(date)) {
 
                 if ("14:00".equals(creneau)) {
+                    URL mapURL = this.getClass().getResource("/plan.png");
+                    Image map = Image.getInstance(mapURL);
+                    map.setSpacingBefore(10f);
+                    map.setBottom(0f);
+                    column.addElement(map);
+
+                    Paragraph twitter = new Paragraph(new Phrase("#BzhCmp", roomFont));
+                    twitter.setAlignment(Element.ALIGN_CENTER);
+                    column.addElement(twitter);
+
                     dateTable.addCell(column);
+
                     column = new PdfPCell();
                     column.setBorder(Rectangle.NO_BORDER);
                     column.setPadding(0);
@@ -134,9 +146,10 @@ public class MiniProgTextRenderer {
                     column.addElement(creneauTable);
                 }
             }
-            dateTable.addCell(column);
 
+            dateTable.addCell(column);
             document.add(dateTable);
+
             document.newPage();
         }
     }

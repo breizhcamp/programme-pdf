@@ -22,7 +22,7 @@ import java.util.List;
 public class Jour {
     private String title;
     private String date;
-    private List<Track> tracks;
+    private List<Talk> proposals;
 
     public String getTitle() {
         return title;
@@ -32,10 +32,10 @@ public class Jour {
         return date;
     }
 
-    public List<Track> getTracks() {
-        if (tracks == null) {
-            tracks = new ArrayList<>();
+    public List<Talk> getProposals() {
+        if (proposals == null) {
+            proposals = new ArrayList<>();
         }
-        return tracks;
+        return proposals;
     }
 }

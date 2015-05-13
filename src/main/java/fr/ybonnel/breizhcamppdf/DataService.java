@@ -43,10 +43,8 @@ public class DataService {
                 programme = gson.fromJson(new InputStreamReader(connection.getInputStream()), Event.class).getProgramme();
 
                 for (Jour jour : getProgramme().getJours()) {
-                    for (Track track : jour.getTracks()) {
-                        for (Talk talk : track.getProposals()) {
-                            TalkService.INSTANCE.getTalkDetail(talk);
-                        }
+                    for (Talk talk : jour.getProposals()) {
+                        TalkService.INSTANCE.getTalkDetail(talk);
                     }
                 }
             } catch (IOException e) {
@@ -74,9 +72,7 @@ public class DataService {
         if (talks == null) {
             talks = new ArrayList<>();
             for (Jour jour : getProgramme().getJours()) {
-                for (Track track : jour.getTracks()) {
-                    talks.addAll(track.getProposals());
-                }
+                talks.addAll(jour.getProposals());
             }
         }
         return talks;
@@ -89,9 +85,7 @@ public class DataService {
             talksByDate = new HashMap<>();
             for (Jour jour : getProgramme().getJours()) {
                 talksByDate.put(jour.getDate(), new ArrayList<Talk>());
-                for (Track track : jour.getTracks()) {
-                    talksByDate.get(jour.getDate()).addAll(track.getProposals());
-                }
+                talksByDate.get(jour.getDate()).addAll(jour.getProposals());
             }
         }
         return talksByDate;
@@ -100,6 +94,10 @@ public class DataService {
     private Map<String,List<String>> roomsByDate = new HashMap<>();
 
     public List<String> getRooms(String date) {
+        return getRooms(date, true);
+    }
+
+    public List<String> getRooms(String date, boolean skipHall) {
         List<String> rooms = roomsByDate.get(date);
         if (rooms == null) {
             Set<String> roomsInSet = new HashSet<>();
@@ -110,10 +108,17 @@ public class DataService {
                 roomsInSet.add(talk.getRoom());
             }
             rooms = new ArrayList<>(roomsInSet);
+
             Collections.sort(rooms);
             Collections.reverse(rooms);
             roomsByDate.put(date, rooms);
         }
+
+        if (skipHall) {
+            rooms = new ArrayList<>(rooms);
+            rooms.remove("hall");
+        }
+
         return rooms;
     }
 
@@ -140,7 +145,8 @@ public class DataService {
         for (Talk talk : getTalksByDate().get(date)) {
             if (creneau.equals(talk.getStart()) && room.equals(talk.getRoom())) {
                 if (talkSelected != null) {
-                    throw new RuntimeException("Two talk for " + date + " " + creneau + " " + room);
+                    System.out.println("Two talk for " + date + " " + creneau + " " + room);
+                    //throw new RuntimeException("Two talk for " + date + " " + creneau + " " + room);
                 }
                 talkSelected = talk;
             }

@@ -44,8 +44,9 @@ public class PdfHandler extends AbstractHandler {
     }
 
     public static void main(String[] args) throws Exception {
-        generate(new FileOutputStream("programme.pdf"), true);
-        generate(new FileOutputStream("salles.pdf"), false);
+        //generate(new FileOutputStream("programme.pdf"), true);
+        //generate(new FileOutputStream("salles.pdf"), false);
+        generateMini(new FileOutputStream("mini-prog.pdf"));
     }
 
     protected static void generate(OutputStream output, boolean schedule) throws IOException {
@@ -57,11 +58,29 @@ public class PdfHandler extends AbstractHandler {
             document.open();
 
             if (schedule) {
-                new PdfRenderer(document, pdfWriter).render();
+                new FullProgRenderer(document, pdfWriter).render();
             }
             else {
-                new RoomPdfRenderer(document, pdfWriter).render();
+                new RoomProgRenderer(document, pdfWriter).render();
             }
+
+            document.close();
+
+        } catch (DocumentException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected static void generateMini(OutputStream output) throws IOException {
+        Document document = new Document(PageSize.A6);
+        document.setMargins(0, 0, 0, 0);
+
+        try {
+            PdfWriter pdfWriter = PdfWriter.getInstance(document, output);
+
+            document.open();
+
+            new MiniProgTextRenderer(document, pdfWriter).render();
 
             document.close();
 

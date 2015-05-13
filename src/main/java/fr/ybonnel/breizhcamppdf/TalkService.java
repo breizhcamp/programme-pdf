@@ -52,7 +52,6 @@ public enum TalkService {
         TalkDetail detail = talks.get(talk.getId());
         if (detail != null) {
             detail.setTalk(talk);
-            talk.setTrack(detail.getTrack());
         }
         return detail;
     }

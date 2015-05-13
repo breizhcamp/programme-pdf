@@ -40,10 +40,6 @@ public class TalkDetail {
         return description;
     }
 
-    public String getTrack() {
-        return track;
-    }
-
     public List<Speaker> getSpeakers() {
         if (speakers == null) {
             speakers = new ArrayList<>();

@@ -16,26 +16,20 @@
  */
 package fr.ybonnel.breizhcamppdf;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.html.simpleparser.HTMLWorker;
 import com.itextpdf.text.pdf.*;
-import com.petebevin.markdown.MarkdownProcessor;
 import fr.ybonnel.breizhcamppdf.model.Speaker;
 import fr.ybonnel.breizhcamppdf.model.Talk;
 import fr.ybonnel.breizhcamppdf.model.TalkDetail;
 
-import java.awt.*;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.*;
 import java.util.List;
 
-public class RoomPdfRenderer {
+public class RoomProgRenderer {
 
     private static final Font talkFont =
             FontFactory.getFont(FontFactory.HELVETICA, 11, Font.NORMAL, BaseColor.BLACK);
@@ -45,7 +39,7 @@ public class RoomPdfRenderer {
 
     private static final Font themeFont =
             FontFactory.getFont(FontFactory.HELVETICA, 8,
-                    Font.ITALIC, BaseColor.GRAY);
+                    Font.ITALIC, BaseColor.DARK_GRAY);
 
     private static final Font presentFont =
             FontFactory.getFont(FontFactory.HELVETICA, 13,
@@ -58,7 +52,7 @@ public class RoomPdfRenderer {
     private PdfWriter pdfWriter;
     private DataService service = new DataService();
 
-    public RoomPdfRenderer(Document document, PdfWriter pdfWriter) {
+    public RoomProgRenderer(Document document, PdfWriter pdfWriter) {
         this.document = document;
         this.pdfWriter = pdfWriter;
     }
@@ -149,7 +143,7 @@ public class RoomPdfRenderer {
 
     private String getEndTime(String date, String creneau) {
         String endTime = "99:99";
-        for (String room : service.getRooms(date)) {
+        for (String room : service.getRooms(date, false)) {
             Talk talk = service.getTalkByDateAndCreneauxAndRoom(date, creneau, room);
             if (talk != null && talk.getEnd().compareTo(endTime) < 0) {
                 endTime = talk.getEnd();
@@ -168,10 +162,10 @@ public class RoomPdfRenderer {
         legend.addCell(cellTitle);
 
         for (String track : tracksInPage) {
-            PdfPCell color = new PdfPCell(new Phrase(track, speakerFont));
+            PdfPCell color = new PdfPCell(new Phrase(FullProgRenderer.mapTrackTitle.get(track), speakerFont));
             color.setHorizontalAlignment(Element.ALIGN_CENTER);
             color.setPadding(2);
-            color.setBackgroundColor(mapTrack.get(track));
+            color.setBackgroundColor(FullProgRenderer.mapTrack.get(track));
             legend.addCell(color);
         }
         tracksInPage.clear();
@@ -204,32 +198,8 @@ public class RoomPdfRenderer {
         return table;
     }
 
-    private static final Map<String, BaseColor> mapTrack = new HashMap<String, BaseColor>() {{
-        BaseColor jaune = new BaseColor(Color.decode("#F9DB0B"));
-        BaseColor orange = new BaseColor(Color.decode("#FF8C00"));
-        BaseColor vert = new BaseColor(Color.decode("#56C566"));
-        BaseColor bleu = new BaseColor(Color.decode("#B0C4DE"));
-        BaseColor violet = new BaseColor(Color.decode("#A174B9"));
-        
-        put("Web", jaune);
-        put("Cloud et BigData", orange);
-        put("Agilité", vert);
-        put("DevOps", bleu);
-        put("Internet of Things", violet);
-        put("Hardware", violet);
-        
-        put("Keynote", new BaseColor(Color.decode("#F8ECDE")));
-        put("Architecture", orange);
-        put("Langages", bleu);
-        put("découverte", violet);
-        put("Web et Mobile", jaune);
-        put("Tooling", vert);
-        put("Tool", vert);
-    }};
-
-
     private void remplirCellWithTalk(PdfPCell cell, Talk talk) throws DocumentException, IOException {
-        Image image = AvatarService.INSTANCE.getImage(RoomPdfRenderer.class.getResource("/formats/" + talk.getFormat().replaceAll(" ", "") + ".png"));
+        Image image = AvatarService.INSTANCE.getImage(RoomProgRenderer.class.getResource("/formats/" + talk.getFormat().replaceAll(" ", "").replaceAll("-", "").replaceAll("'", "").toLowerCase()  + ".png"));
 
 
         float[] widths = {0.05f, 0.95f};
@@ -244,7 +214,7 @@ public class RoomPdfRenderer {
         titleTalk.add(chunk);
         titleTalk.setAlignment(Paragraph.ALIGN_CENTER);
         subCell.addElement(titleTalk);
-        Paragraph track = new Paragraph(new Phrase(talk.getTrack(), themeFont));
+        Paragraph track = new Paragraph(new Phrase(FullProgRenderer.mapTrackTitle.get(talk.getTrack()), themeFont));
         track.setAlignment(Paragraph.ALIGN_CENTER);
 
         subCell.addElement(track);
@@ -258,7 +228,7 @@ public class RoomPdfRenderer {
         }
         subCell.setBorder(Rectangle.NO_BORDER);
         table.addCell(subCell);
-        cell.setBackgroundColor(mapTrack.get(talk.getTrack()));
+        cell.setBackgroundColor(FullProgRenderer.mapTrack.get(talk.getTrack()));
         cell.addElement(table);
     }
 }

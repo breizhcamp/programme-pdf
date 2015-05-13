@@ -35,7 +35,7 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.List;
 
-public class PdfRenderer {
+public class FullProgRenderer {
 
     private static final Font talkFont =
             FontFactory.getFont(FontFactory.HELVETICA, 11, Font.NORMAL, BaseColor.BLACK);
@@ -45,7 +45,7 @@ public class PdfRenderer {
 
     private static final Font themeFont =
             FontFactory.getFont(FontFactory.HELVETICA, 8,
-                    Font.ITALIC, BaseColor.GRAY);
+                    Font.ITALIC, BaseColor.DARK_GRAY);
 
     private static final Font presentFont =
             FontFactory.getFont(FontFactory.HELVETICA, 13,
@@ -58,7 +58,7 @@ public class PdfRenderer {
     private PdfWriter pdfWriter;
     private DataService service = new DataService();
 
-    public PdfRenderer(Document document, PdfWriter pdfWriter) {
+    public FullProgRenderer(Document document, PdfWriter pdfWriter) {
         this.document = document;
         this.pdfWriter = pdfWriter;
     }
@@ -75,7 +75,7 @@ public class PdfRenderer {
                     ColumnText.showTextAligned(
                             writer.getDirectContent(),
                             Element.ALIGN_CENTER,
-                            new Phrase("BreizhCamp 2014"),
+                            new Phrase("BreizhCamp 2015"),
                             (rect.getLeft() + rect.getRight()) / 2, rect.getBottom() + 18, 0);
                 }
             }
@@ -91,17 +91,17 @@ public class PdfRenderer {
         Rectangle savePagesize = document.getPageSize();
         document.setPageSize(PageSize.A4);
         document.newPage();
-        Image imageLogo = Image.getInstance(PdfRenderer.class.getResource("/logo.png"));
+        Image imageLogo = Image.getInstance(FullProgRenderer.class.getResource("/logo.png"));
         imageLogo.scaleToFit(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin(), imageLogo.getHeight());
         document.add(imageLogo);
 
-        Paragraph paragraph = new Paragraph("21, 22 et 23 mai");
+        Paragraph paragraph = new Paragraph("10, 11 et 12 juin");
         paragraph.setSpacingAfter(80);
         paragraph.getFont().setSize(20);
         paragraph.setAlignment(Element.ALIGN_CENTER);
         document.add(paragraph);
 
-        Paragraph title = new Paragraph("Programme 2014");
+        Paragraph title = new Paragraph("Programme 2015");
         title.setSpacingAfter(100);
         title.getFont().setSize(56);
         title.setAlignment(Element.ALIGN_CENTER);
@@ -109,19 +109,21 @@ public class PdfRenderer {
 
         PdfPTable sponsors = new PdfPTable(4);
         sponsors.setWidthPercentage(90f);
-        addSponsor(sponsors, "http://www.breizhcamp.org/img/LogoZenika-H-(Quadri).jpg", 2);
-        addSponsor(sponsors, "http://blogs.technet.com/resized-image.ashx/__size/450x0/__key/communityserver-blogs-components-weblogfiles/00-00-00-80-54/6864.Microsoft-Logo.png", 2);
-        addSponsor(sponsors, "http://www.breizhcamp.org/img/Google_Logo_3564x1189.png", 1);
-        addSponsor(sponsors, "http://www.breizhcamp.org/img/cbpaas.jpeg", 1);
-        addSponsor(sponsors, "https://github.global.ssl.fastly.net/images/modules/logos_page/GitHub-Logo.png", 1);
-        addSponsor(sponsors, "http://www.breizhcamp.org/img/sonarsource-300x94.png", 1);
-        addSponsor(sponsors, "http://www.breizhcamp.org/img/serli.png", 1);
-        addSponsor(sponsors, "http://www.breizhcamp.org/img/Logo_sqli_group.png", 1);
-        addSponsor(sponsors, "http://www.breizhcamp.org/img/SofteamCadextanLogo_w200.png", 1);
-        addSponsor(sponsors, "http://www.breizhcamp.org/img/logoSII_w200.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_zenika.png", 2);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_ovh.png", 2);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_google.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_jfrog.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_sii.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_jouve.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_sqli.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_cloudbees.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_github.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_sonarsource.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_ippon.png", 1);
+        addSponsor(sponsors, "http://www.breizhcamp.org/img/logo_netapsys.jpg", 1);
         document.add(sponsors);
 
-        Image istic = Image.getInstance("http://www.breizhcamp.org/img/Logo_ISTIC_BLACK_FRA.jpg");
+        Image istic = Image.getInstance("http://www.breizhcamp.org/img/logo_istic.png");
         istic.scaleToFit(150, 150);
         istic.setAlignment(Element.ALIGN_CENTER);
         document.add(istic);
@@ -196,6 +198,7 @@ public class PdfRenderer {
                 cellCreneau.addElement(endTime);
                 table.addCell(cellCreneau);
                 for (String room : service.getRooms(date)) {
+
                     PdfPCell cell = new PdfPCell();
                     cell.setPaddingBottom(10);
                     cell.setHorizontalAlignment(Element.ALIGN_LEFT);
@@ -222,9 +225,9 @@ public class PdfRenderer {
         return talksToExplain;
     }
 
-    private String getEndTime(String date, String creneau) {
+    protected String getEndTime(String date, String creneau) {
         String endTime = "99:99";
-        for (String room : service.getRooms(date)) {
+        for (String room : service.getRooms(date, false)) {
             Talk talk = service.getTalkByDateAndCreneauxAndRoom(date, creneau, room);
             if (talk != null && talk.getEnd().compareTo(endTime) < 0) {
                 endTime = talk.getEnd();
@@ -243,7 +246,7 @@ public class PdfRenderer {
         legend.addCell(cellTitle);
 
         for (String track : tracksInPage) {
-            PdfPCell color = new PdfPCell(new Phrase(track, speakerFont));
+            PdfPCell color = new PdfPCell(new Phrase(mapTrackTitle.get(track), speakerFont));
             color.setHorizontalAlignment(Element.ALIGN_CENTER);
             color.setPadding(2);
             color.setBackgroundColor(mapTrack.get(track));
@@ -279,32 +282,44 @@ public class PdfRenderer {
         return table;
     }
 
-    private static final Map<String, BaseColor> mapTrack = new HashMap<String, BaseColor>() {{
-        BaseColor jaune = new BaseColor(Color.decode("#F9DB0B"));
-        BaseColor orange = new BaseColor(Color.decode("#FF8C00"));
-        BaseColor vert = new BaseColor(Color.decode("#56C566"));
-        BaseColor bleu = new BaseColor(Color.decode("#B0C4DE"));
-        BaseColor violet = new BaseColor(Color.decode("#A174B9"));
-        
-        put("Web", jaune);
-        put("Cloud et BigData", orange);
-        put("Agilité", vert);
-        put("DevOps", bleu);
-        put("Internet of Things", violet);
-        put("Hardware", violet);
-        
-        put("Keynote", new BaseColor(Color.decode("#F8ECDE")));
-        put("Architecture", orange);
-        put("Langages", bleu);
-        put("découverte", violet);
-        put("Web et Mobile", jaune);
-        put("Tooling", vert);
-        put("Tool", vert);
+    private static BaseColor getAlphaColor(String rgb) {
+        Color opaqueColor = Color.decode(rgb);
+        return new BaseColor(opaqueColor.getRed(), opaqueColor.getGreen(), opaqueColor.getBlue(), 50);
+    }
+
+    protected static final Map<String, BaseColor> mapTrack = new HashMap<String, BaseColor>() {{
+
+        put("keynote", getAlphaColor("#93D2C5"));
+        put("track1", getAlphaColor("#FF69BB"));
+        put("track2", getAlphaColor("#8ADAFF"));
+        put("track3", getAlphaColor("#EDFF75"));
+        put("track4", getAlphaColor("#FFDF6C"));
+        put("track5", getAlphaColor("#C3B6FA"));
+        put("track6", getAlphaColor("#FFA5FF"));
+        put("track7", getAlphaColor("#FFFF66"));
+        put("track8", getAlphaColor("#66FFFF"));
+        put("track9", getAlphaColor("#66FFFF"));
+
+    }};
+
+    protected static final Map<String, String> mapTrackTitle = new HashMap<String, String>() {{
+
+        put("keynote", "Keynote");
+        put("track1", "Architecture, Performance & Securité");
+        put("track2", "Agilité, Méthodologie & Tests");
+        put("track3", "Java, JVM, Javas SE/EE");
+        put("track4", "Cloud, DevOps, Outils");
+        put("track5", "BigData et Analytics");
+        put("track6", "Objects connectés, IoT, Robotique");
+        put("track7", "Languages");
+        put("track8", "Web, Mobile & UX");
+        put("track9", "Web, Mobile & UX");
+
     }};
 
 
     private void remplirCellWithTalk(PdfPCell cell, Talk talk) throws DocumentException, IOException {
-        Image image = AvatarService.INSTANCE.getImage(PdfRenderer.class.getResource("/formats/" + talk.getFormat().replaceAll(" ", "") + ".png"));
+        Image image = AvatarService.INSTANCE.getImage(FullProgRenderer.class.getResource("/formats/" + talk.getFormat().replaceAll(" ", "").replaceAll("-", "").replaceAll("'", "").toLowerCase() + ".png"));
 
 
         float[] widths = {0.15f, 0.85f};
@@ -319,7 +334,7 @@ public class PdfRenderer {
         titleTalk.add(chunk);
         titleTalk.setAlignment(Paragraph.ALIGN_CENTER);
         subCell.addElement(titleTalk);
-        Paragraph track = new Paragraph(new Phrase(talk.getTrack(), themeFont));
+        Paragraph track = new Paragraph(new Phrase(mapTrackTitle.get(talk.getTrack()), themeFont));
         track.setAlignment(Paragraph.ALIGN_CENTER);
 
         subCell.addElement(track);
@@ -333,7 +348,10 @@ public class PdfRenderer {
         }
         subCell.setBorder(Rectangle.NO_BORDER);
         table.addCell(subCell);
-        cell.setBackgroundColor(mapTrack.get(talk.getTrack()));
+
+        BaseColor color =  mapTrack.get(talk.getTrack());
+        cell.setBackgroundColor(color);
+
         cell.addElement(table);
     }
 
@@ -375,7 +393,7 @@ public class PdfRenderer {
             titleWithFormat.getDefaultCell().setBorder(Rectangle.NO_BORDER);
             titleWithFormat.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-            Image image = AvatarService.INSTANCE.getImage(PdfRenderer.class.getResource("/formats/" + talk.getTalk().getFormat().replaceAll(" ", "") + ".png"));
+            Image image = AvatarService.INSTANCE.getImage(FullProgRenderer.class.getResource("/formats/" + talk.getTalk().getFormat().replaceAll(" ", "").replaceAll("-", "").replaceAll("'", "").toLowerCase() + ".png"));
             titleWithFormat.addCell(image);
             titleWithFormat.addCell(new Paragraph(titleTalk));
 

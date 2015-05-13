@@ -45,10 +45,6 @@ public class Talk {
         return track;
     }
 
-    public void setTrack(String track) {
-        this.track = track;
-    }
-
     public String getStart() {
         return start.length() == 5 ? start : ("0" + start);
     }

@@ -17,13 +17,13 @@
 package fr.ybonnel.breizhcamppdf.model;
 
 public class Talk {
-    private String id;
-    private String start;
-    private String end;
-    private String format;
-    private String title;
-    private String room;
-    private String track;
+    public String id;
+    public String start;
+    public String end;
+    public String format;
+    public String title;
+    public String room;
+    public String track;
 
     public String getId() {
         return id;

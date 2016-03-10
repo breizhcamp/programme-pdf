@@ -36,6 +36,9 @@ public class MiniProgTextRenderer {
 
     private static final Font roomFont =
             FontFactory.getFont(FontFactory.HELVETICA, 5, Font.ITALIC, BaseColor.DARK_GRAY);
+    
+    private static final Font hashFont =
+            FontFactory.getFont(FontFactory.HELVETICA, 8, Font.BOLDITALIC, BaseColor.DARK_GRAY);
 
     private Document document;
     private PdfWriter pdfWriter;
@@ -45,11 +48,29 @@ public class MiniProgTextRenderer {
         this.document = document;
         this.pdfWriter = pdfWriter;
     }
+    
+    private void addBackground() throws DocumentException, IOException {
+    	PdfContentByte canvas = pdfWriter.getDirectContentUnder();
+    	URL mapURL = this.getClass().getResource("/logo.png");
+        Image image = Image.getInstance(mapURL);
+        image.scalePercent(80);
+        image.setAbsolutePosition(28, 90);
+        canvas.saveState();
+        PdfGState state = new PdfGState();
+        state.setFillOpacity(0.2f);
+        canvas.setGState(state);
+        canvas.addImage(image);
+        canvas.restoreState();
+    }
 
     public void render() throws DocumentException, IOException {
         List<Talk> talksToExplain = new ArrayList<>();
         document.setPageSize(PageSize.A6);
-
+        
+        int page = 1;
+        
+        addBackground();
+        
         for (String date : service.getDates()) {
 
             Paragraph titre = new Paragraph("Programme du " + date, titleFont);
@@ -67,18 +88,16 @@ public class MiniProgTextRenderer {
             column.setPadding(0);
 
             for (String creneau : service.getCreneaux().get(date)) {
-
-                if ("14:00".equals(creneau)) {
-                    URL mapURL = this.getClass().getResource("/plan.png");
-                    Image map = Image.getInstance(mapURL);
-                    map.setSpacingBefore(10f);
-                    map.setBottom(0f);
-                    column.addElement(map);
-
-                    Paragraph twitter = new Paragraph(new Phrase("#BzhCmp", roomFont));
+            	
+            	//System.out.println("Creneau " + creneau);
+            	
+                if ("13:30".equals(creneau)) {
+                	
+                    Paragraph twitter = new Paragraph(new Phrase("#BzhCmp", hashFont));
                     twitter.setAlignment(Element.ALIGN_CENTER);
+                    twitter.setSpacingBefore(20);
                     column.addElement(twitter);
-
+                   
                     dateTable.addCell(column);
 
                     column = new PdfPCell();
@@ -86,7 +105,7 @@ public class MiniProgTextRenderer {
                     column.setPadding(0);
                 }
 
-                PdfPTable creneauTable = new PdfPTable(new float[]{ 1f, 7f });
+                PdfPTable creneauTable = new PdfPTable(new float[]{ 1f, 6f });
                 creneauTable.setWidthPercentage(100);
 
 
@@ -110,6 +129,9 @@ public class MiniProgTextRenderer {
 
                 boolean hasTalk = false;
                 for (String room : service.getRooms(date)) {
+                	
+                	//System.out.println("Room " + room);
+                	
                     Talk talk = service.getTalkByDateAndCreneauxAndRoom(date, creneau, room);
                     if (talk != null) {
 
@@ -134,6 +156,8 @@ public class MiniProgTextRenderer {
                         titleTalk.add(new Phrase(talk.getTitle(), talkFont));
                         //titleTalk.add(new Phrase(talk.getRoom(), roomFont));
                         talkTable.addCell(titleTalk);
+                        
+                        //System.out.println("Talk " + talk.title + " Room " + room);
 
                         talks.addElement(talkTable);
 
@@ -151,6 +175,12 @@ public class MiniProgTextRenderer {
             document.add(dateTable);
 
             document.newPage();
+            
+            page++;
+            
+            if (page <= 3) {
+            	addBackground();
+            }
         }
     }
 

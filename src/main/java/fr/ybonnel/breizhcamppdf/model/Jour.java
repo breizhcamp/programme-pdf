@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Jour {
-    private String title;
-    private String date;
+    public String title;
+    public String date;
     private List<Talk> proposals;
 
     public String getTitle() {
